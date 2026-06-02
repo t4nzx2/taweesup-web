@@ -2,8 +2,10 @@
   "name": "taweesup-web",
   "version": "1.0.0",
   "scripts": {
-    "build": "cd client && npm install && npm run build",
-    "start": "cd server && node index.js",
-    "install-all": "cd server && npm install && cd ../client && npm install"
+    "build": "npm install --prefix server && npm install --prefix client && npm run build --prefix client",
+    "start": "node server/index.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
