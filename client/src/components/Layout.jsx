@@ -14,9 +14,9 @@ const mainNav = [
   { to: '/leave', key: 'leaveRequests', icon: '◫' },
 ];
 const mgmtNav = [
-  { to: '/payroll', key: 'payroll', icon: '$' },
-  { to: '/accounts', key: 'accounts', icon: '฿', label: 'บัญชี' },
-  { to: '/reviews', key: 'performance', icon: '★' },
+  { to: '/payroll', key: 'payroll', icon: '$', restricted: true },
+  { to: '/accounts', key: 'accounts', icon: '฿', label: 'บัญชี', restricted: true },
+  { to: '/reviews', key: 'performance', icon: '★', restricted: true },
   { to: '/incidents', key: 'incidents', icon: '⚠', restricted: true },
 ];
 
@@ -92,10 +92,12 @@ export default function Layout() {
           <NavGroup items={mainNav} />
         </div>
 
-        <div className="nav-section">
-          <div className="nav-section-label">Team Management</div>
-          <NavGroup items={mgmtNav} />
-        </div>
+        {isHRorMgr && (
+          <div className="nav-section">
+            <div className="nav-section-label">Team Management</div>
+            <NavGroup items={mgmtNav} />
+          </div>
+        )}
 
         <div className="sidebar-bottom">
           <div className="user-card">
