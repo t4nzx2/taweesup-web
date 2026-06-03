@@ -4,6 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import api from '../api';
 import { useLang } from '../LangContext';
 import { useAuth } from '../AuthContext';
+import { formatTHB, toBE, todayBE } from '../utils';
 
 const monthlyData = [
   { month: 'Jan', income: 6200, expense: 3100 }, { month: 'Feb', income: 7800, expense: 3400 },
@@ -20,7 +21,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { t } = useLang();
   const { user } = useAuth();
-  const today = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  const today = todayBE();
 
   useEffect(() => {
     api.get('/dashboard').then(r => setData(r.data)).catch(() => {});
@@ -84,7 +85,7 @@ export default function Dashboard() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f2f7" />
               <XAxis dataKey="month" tick={{fontSize:11, fill:'#8a93a8'}} axisLine={false} tickLine={false} />
               <YAxis tick={{fontSize:11, fill:'#8a93a8'}} axisLine={false} tickLine={false} tickFormatter={v=>`$${v/1000}k`} />
-              <Tooltip formatter={(v, n) => [`$${v.toLocaleString()}`, n === 'income' ? 'Income' : 'Expense']} contentStyle={{borderRadius:8, border:'1px solid #e8eaf0', fontSize:12}} />
+              <Tooltip formatter={(v, n) => [formatTHB(v), n === 'income' ? 'รายรับ' : 'รายจ่าย']} contentStyle={{borderRadius:8, border:'1px solid #e8eaf0', fontSize:12}} />
               <Line type="monotone" dataKey="income" stroke="#6c63ff" strokeWidth={2.5} dot={false} />
               <Line type="monotone" dataKey="expense" stroke="#f59e0b" strokeWidth={2.5} dot={false} />
             </LineChart>
@@ -142,7 +143,7 @@ export default function Dashboard() {
                 </td>
                 <td>{e.department_name || '—'}</td>
                 <td style={{color:'var(--text-muted)'}}>{e.job_title || '—'}</td>
-                <td style={{color:'var(--text-muted)'}}>{e.hire_date}</td>
+                <td style={{color:'var(--text-muted)'}}>{toBE(e.hire_date)}</td>
                 <td>
                   <span className={`badge ${e.employment_status === 'Active' ? 'badge-green' : e.employment_status === 'On Leave' ? 'badge-yellow' : 'badge-red'}`}>
                     {e.employment_status}

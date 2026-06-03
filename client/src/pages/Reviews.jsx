@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../api';
 import { useAuth } from '../AuthContext';
 import { useLang } from '../LangContext';
+import { toBE } from '../utils';
 
 export default function Reviews() {
   const { user } = useAuth();
@@ -31,7 +32,7 @@ export default function Reviews() {
               {reviews.map(r => (
                 <tr key={r.review_id}>
                   {canReview && <td>{r.employee_name}</td>}
-                  <td>{r.review_date}</td>
+                  <td>{toBE(r.review_date)}</td>
                   <td>{r.reviewer_name}</td>
                   <td style={{fontSize:16}}>{'★'.repeat(r.performance_score)}{'☆'.repeat(5 - r.performance_score)}</td>
                   <td>{r.comments || '—'}</td>

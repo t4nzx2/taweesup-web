@@ -11,8 +11,6 @@ import Timesheet from './pages/Timesheet';
 import LeaveRequests from './pages/LeaveRequests';
 import Payroll from './pages/Payroll';
 import Reviews from './pages/Reviews';
-import Training from './pages/Training';
-import Benefits from './pages/Benefits';
 import Incidents from './pages/Incidents';
 import Departments from './pages/Departments';
 import Accounts from './pages/Accounts';
@@ -38,8 +36,6 @@ export default function App() {
             <Route path="leave" element={<LeaveRequests />} />
             <Route path="payroll" element={<Payroll />} />
             <Route path="reviews" element={<Reviews />} />
-            <Route path="training" element={<Training />} />
-            <Route path="benefits" element={<Benefits />} />
             <Route path="incidents" element={<Incidents />} />
             <Route path="departments" element={<Departments />} />
             <Route path="accounts" element={<Accounts />} />

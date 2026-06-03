@@ -60,9 +60,6 @@ export default function Login() {
             {loading ? t('signingIn') : t('signIn')}
           </button>
         </form>
-        <p style={{marginTop: 16, fontSize: 12, color: 'var(--text-muted)', textAlign: 'center'}}>
-          {t('demo')}: admin / admin123
-        </p>
       </div>
     </div>
   );

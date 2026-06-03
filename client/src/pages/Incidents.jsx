@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../api';
 import { useAuth } from '../AuthContext';
 import { useLang } from '../LangContext';
+import { toBE } from '../utils';
 
 const actionBadge = { 'Verbal Warning': 'badge-yellow', 'Written Warning': 'badge-warning', 'Suspension': 'badge-red', 'Termination': 'badge-red', 'Other': 'badge-gray' };
 
@@ -30,7 +31,7 @@ export default function Incidents() {
               {incidents.map(i => (
                 <tr key={i.incident_id}>
                   <td>{i.employee_name}</td>
-                  <td>{i.incident_date}</td>
+                  <td>{toBE(i.incident_date)}</td>
                   <td>{i.violation_type}<br/><span style={{fontSize:11, color:'var(--text-muted)'}}>{i.description}</span></td>
                   <td><span className={`badge ${actionBadge[i.action_taken] || 'badge-gray'}`}>{i.action_taken || '—'}</span></td>
                   <td>{i.recorded_by_name || '—'}</td>

@@ -19,8 +19,9 @@ router.post('/clock-in', (req, res) => {
   const employee_id = req.user.employee_id;
   const today = new Date().toISOString().slice(0, 10);
   const now = new Date().toTimeString().slice(0, 8);
-  const existing = db.prepare('SELECT * FROM timesheets WHERE employee_id=? AND work_date=?').get(employee_id, today);
-  if (existing && existing.clock_in_time && !existing.clock_out_time) return res.status(400).json({ error: 'Already clocked in' });
+  // Block if ANY open record exists (not just today)
+  const openRecord = db.prepare('SELECT * FROM timesheets WHERE employee_id=? AND clock_out_time IS NULL ORDER BY work_date DESC LIMIT 1').get(employee_id);
+  if (openRecord) return res.status(400).json({ error: 'ลงเวลาเข้าแล้ว กรุณาลงเวลาออกก่อน' });
   db.prepare('INSERT INTO timesheets (employee_id, work_date, clock_in_time) VALUES (?,?,?)').run(employee_id, today, now);
   res.json({ success: true, clock_in_time: now });
 });
@@ -28,21 +29,27 @@ router.post('/clock-in', (req, res) => {
 // Clock out
 router.post('/clock-out', (req, res) => {
   const employee_id = req.user.employee_id;
-  const today = new Date().toISOString().slice(0, 10);
   const now = new Date().toTimeString().slice(0, 8);
-  const row = db.prepare('SELECT * FROM timesheets WHERE employee_id=? AND work_date=? AND clock_out_time IS NULL').get(employee_id, today);
-  if (!row) return res.status(400).json({ error: 'Not clocked in' });
-  const inTime = new Date(`${today}T${row.clock_in_time}`);
+  const today = new Date().toISOString().slice(0, 10);
+  // Find the most recent open record (any date)
+  const row = db.prepare('SELECT * FROM timesheets WHERE employee_id=? AND clock_out_time IS NULL ORDER BY work_date DESC, timesheet_id DESC LIMIT 1').get(employee_id);
+  if (!row) return res.status(400).json({ error: 'ยังไม่ได้ลงเวลาเข้า' });
+  const workDate = row.work_date;
+  const inTime = new Date(`${workDate}T${row.clock_in_time}`);
   const outTime = new Date(`${today}T${now}`);
-  const hours = Math.round(((outTime - inTime) / 3600000) * 100) / 100;
-  db.prepare('UPDATE timesheets SET clock_out_time=?, total_hours=? WHERE timesheet_id=?').run(now, hours, row.timesheet_id);
+  const hours = Math.max(0, Math.round(((outTime - inTime) / 3600000) * 100) / 100);
+  db.prepare('UPDATE timesheets SET clock_out_time=?, total_hours=?, work_date=? WHERE timesheet_id=?').run(now, hours, today, row.timesheet_id);
   res.json({ success: true, total_hours: hours });
 });
 
 router.get('/status', (req, res) => {
   const employee_id = req.user.employee_id;
+  // Return most recent open record if any
+  const open = db.prepare('SELECT * FROM timesheets WHERE employee_id=? AND clock_out_time IS NULL ORDER BY work_date DESC, timesheet_id DESC LIMIT 1').get(employee_id);
+  if (open) return res.json(open);
+  // Otherwise return today's completed record
   const today = new Date().toISOString().slice(0, 10);
-  const row = db.prepare('SELECT * FROM timesheets WHERE employee_id=? AND work_date=?').get(employee_id, today);
+  const row = db.prepare('SELECT * FROM timesheets WHERE employee_id=? AND work_date=? ORDER BY timesheet_id DESC LIMIT 1').get(employee_id, today);
   res.json(row || { clocked_in: false });
 });
 

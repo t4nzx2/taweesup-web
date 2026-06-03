@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api from '../api';
+import { toBE } from '../utils';
 import { useAuth } from '../AuthContext';
 import { useLang } from '../LangContext';
 
@@ -62,8 +63,8 @@ export default function LeaveRequests() {
                 <tr key={r.leave_id}>
                   {isHR && <td>{r.employee_name}</td>}
                   <td>{r.leave_type}</td>
-                  <td>{r.start_date}</td>
-                  <td>{r.end_date}</td>
+                  <td>{toBE(r.start_date)}</td>
+                  <td>{toBE(r.end_date)}</td>
                   <td>{r.reason || '—'}</td>
                   <td><span className={`badge ${statusBadge[r.approval_status]}`}>{r.approval_status}</span></td>
                   {isHR && (

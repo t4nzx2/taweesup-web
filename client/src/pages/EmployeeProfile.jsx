@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import { useAuth } from '../AuthContext';
 import { useLang } from '../LangContext';
+import { toBE } from '../utils';
 
 export default function EmployeeProfile() {
   const { id } = useParams();
@@ -34,11 +35,35 @@ export default function EmployeeProfile() {
 
   const initials = `${emp.first_name[0]}${emp.last_name[0]}`;
 
+  const handleTerminate = async () => {
+    if (!confirm(`เปลี่ยนสถานะ ${emp.first_name} ${emp.last_name} เป็น "Terminated" หรือไม่?`)) return;
+    try {
+      await api.put(`/employees/${id}`, { ...emp, employment_status: 'Terminated' });
+      navigate('/employees');
+    } catch { alert('เกิดข้อผิดพลาด'); }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm(`⚠️ ลบพนักงาน "${emp.first_name} ${emp.last_name}" ออกจากระบบถาวรหรือไม่?\n\nข้อมูลทั้งหมดจะหายไป`)) return;
+    try {
+      await api.delete(`/employees/${id}`);
+      navigate('/employees');
+    } catch (e) { alert(e.response?.data?.error || 'เกิดข้อผิดพลาด'); }
+  };
+
   return (
     <div>
       <div className="page-header">
         <h1>{t('employeeProfile')}</h1>
-        <button className="btn btn-secondary" onClick={() => navigate('/employees')}>{t('back')}</button>
+        <div style={{display:'flex', gap:8}}>
+          <button className="btn btn-secondary" onClick={() => navigate('/employees')}>{t('back')}</button>
+          {user.role === 'HR Admin' && emp.employment_status !== 'Terminated' && (
+            <button className="btn btn-warning btn-sm" onClick={handleTerminate}>🚫 ให้ออกจากงาน</button>
+          )}
+          {user.role === 'HR Admin' && (
+            <button className="btn btn-danger btn-sm" onClick={handleDelete}>🗑 ลบออกจากระบบ</button>
+          )}
+        </div>
       </div>
 
       <div className="card" style={{marginBottom: 16}}>
@@ -57,8 +82,6 @@ export default function EmployeeProfile() {
         {[
           ['info', t('info')],
           ['reviews', t('reviews')],
-          ['training', t('trainingTab')],
-          ...(user.role !== 'Employee' ? [['benefits', t('benefitsTab')]] : []),
           ...(user.role === 'HR Admin' ? [['account', '🔑 บัญชีผู้ใช้']] : []),
         ].map(([key, label]) => (
           <button key={key} className={`btn ${tab === key ? 'btn-primary' : 'btn-secondary'} btn-sm`} onClick={() => setTab(key)}>{label}</button>
@@ -69,8 +92,8 @@ export default function EmployeeProfile() {
         <div className="card">
           <div className="form-grid">
             <InfoRow label={t('employeeId')} value={`#${emp.employee_id}`} />
-            <InfoRow label={t('hireDate')} value={emp.hire_date} />
-            <InfoRow label={t('dateOfBirth')} value={emp.date_of_birth || '—'} />
+            <InfoRow label={t('hireDate')} value={toBE(emp.hire_date)} />
+            <InfoRow label={t('dateOfBirth')} value={toBE(emp.date_of_birth)} />
             <InfoRow label={t('phone')} value={emp.phone_number || '—'} />
             <InfoRow label={t('email')} value={emp.email} />
             <InfoRow label={t('status')} value={emp.employment_status} />
@@ -99,45 +122,6 @@ export default function EmployeeProfile() {
         </div>
       )}
 
-      {tab === 'training' && (
-        <div className="card">
-          <h3 style={{marginBottom:12}}>{t('training')}</h3>
-          {training.length === 0 ? <p className="empty">{t('noTraining')}</p> : (
-            <table>
-              <thead><tr><th>{t('course')}</th><th>{t('completed')}</th><th>{t('expires')}</th></tr></thead>
-              <tbody>
-                {training.map(tr => (
-                  <tr key={tr.training_id}>
-                    <td>{tr.course_name}</td>
-                    <td>{tr.completion_date || '—'}</td>
-                    <td>{tr.expiration_date || '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
-
-      {tab === 'benefits' && (
-        <div className="card">
-          <h3 style={{marginBottom:12}}>{t('benefits')}</h3>
-          {benefits.length === 0 ? <p className="empty">{t('noBenefits')}</p> : (
-            <table>
-              <thead><tr><th>{t('planType')}</th><th>{t('enrolled')}</th><th>{t('monthlyCost')}</th></tr></thead>
-              <tbody>
-                {benefits.map(b => (
-                  <tr key={b.benefit_id}>
-                    <td>{b.plan_type}</td>
-                    <td>{b.enrollment_date}</td>
-                    <td>${b.monthly_cost?.toFixed(2)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
       {tab === 'account' && user.role === 'HR Admin' && (
         <AccountTab employeeId={id} account={account} onRefresh={loadAccount} />
       )}

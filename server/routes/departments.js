@@ -25,7 +25,11 @@ router.put('/:id', requireRole('HR Admin'), (req, res) => {
 });
 
 router.delete('/:id', requireRole('HR Admin'), (req, res) => {
-  db.prepare('DELETE FROM departments WHERE department_id=?').run(req.params.id);
+  const id = req.params.id;
+  // Unlink employees and positions from this department, then delete
+  db.prepare('UPDATE employees SET department_id=NULL WHERE department_id=?').run(id);
+  db.prepare('UPDATE positions SET department_id=NULL WHERE department_id=?').run(id);
+  db.prepare('DELETE FROM departments WHERE department_id=?').run(id);
   res.json({ success: true });
 });
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../api';
 import { useAuth } from '../AuthContext';
 import { useLang } from '../LangContext';
+import { formatTHB } from '../utils';
 
 export default function Departments() {
   const { user } = useAuth();
@@ -36,7 +37,6 @@ export default function Departments() {
             <div style={{fontSize:20, marginBottom:8}}>🏢</div>
             <h3 style={{fontWeight:700, marginBottom:4}}>{d.department_name}</h3>
             <p style={{color:'var(--text-muted)', fontSize:13}}>{t('manager')}: {d.manager_name || t('unassigned')}</p>
-            <p style={{color:'var(--text-muted)', fontSize:13}}>{t('budget')}: ${d.budget?.toLocaleString()}</p>
             {isHR && (
               <div style={{display:'flex', gap:8, marginTop:12}}>
                 <button className="btn btn-secondary btn-sm" onClick={() => { setEditing(d); setShowModal(true); }}>{t('edit')}</button>
@@ -90,7 +90,6 @@ function DeptModal({ initial, onClose, onSaved }) {
                 {employees.map(e => <option key={e.employee_id} value={e.employee_id}>{e.first_name} {e.last_name}</option>)}
               </select>
             </div>
-            <div className="form-group"><label>{t('budget')}</label><input type="number" value={form.budget} onChange={e => set('budget', e.target.value)} /></div>
           </div>
           {error && <p style={{color:'var(--danger)', marginTop:8, fontSize:13}}>{error}</p>}
           <div className="modal-footer">

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../api';
 import { useAuth } from '../AuthContext';
 import { useLang } from '../LangContext';
+import { toBE, todayBE } from '../utils';
 
 export default function Timesheet() {
   const { user } = useAuth();
@@ -37,7 +38,7 @@ export default function Timesheet() {
       <div className="page-header"><h1>{t('timesheet')}</h1></div>
 
       <div className="card" style={{marginBottom: 24, textAlign:'center'}}>
-        <p style={{color:'var(--text-muted)', marginBottom:8}}>{t('today')}: {new Date().toDateString()}</p>
+        <p style={{color:'var(--text-muted)', marginBottom:8}}>{t('today')}: {todayBE()}</p>
         {status?.clock_in_time && <p style={{marginBottom:16}}>{t('clockedInAt')} <strong>{status.clock_in_time}</strong></p>}
         <div style={{display:'flex', gap:16, justifyContent:'center'}}>
           <button className="btn btn-success" onClick={clockIn} disabled={loading || isClockedIn} style={{fontSize:18, padding:'16px 40px'}}>
@@ -58,7 +59,7 @@ export default function Timesheet() {
             <tbody>
               {records.map(r => (
                 <tr key={r.timesheet_id}>
-                  <td>{r.work_date}</td>
+                  <td>{toBE(r.work_date)}</td>
                   <td>{r.clock_in_time || '—'}</td>
                   <td>{r.clock_out_time || <span className="badge badge-yellow">{t('active')}</span>}</td>
                   <td>{r.total_hours != null ? `${r.total_hours}h` : '—'}</td>

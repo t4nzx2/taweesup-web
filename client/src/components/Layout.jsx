@@ -17,8 +17,6 @@ const mgmtNav = [
   { to: '/payroll', key: 'payroll', icon: '$' },
   { to: '/accounts', key: 'accounts', icon: '฿', label: 'บัญชี' },
   { to: '/reviews', key: 'performance', icon: '★' },
-  { to: '/training', key: 'training', icon: '◎' },
-  { to: '/benefits', key: 'benefits', icon: '♥' },
   { to: '/incidents', key: 'incidents', icon: '⚠', restricted: true },
 ];
 

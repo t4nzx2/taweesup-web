@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
+import { toBE } from '../utils';
 import { useAuth } from '../AuthContext';
 import { useLang } from '../LangContext';
 
@@ -17,15 +18,32 @@ export default function Employees() {
   const { t } = useLang();
   const navigate = useNavigate();
 
+  const [statusFilter, setStatusFilter] = useState('');
+  const [openMenu, setOpenMenu] = useState(null); // employee_id of open dropdown
+
   const load = () => api.get('/employees').then(r => setEmployees(r.data));
 
   useEffect(() => {
     load();
     api.get('/departments').then(r => setDepartments(r.data));
     api.get('/positions').then(r => setPositions(r.data));
+    // close dropdown on outside click
+    const close = () => setOpenMenu(null);
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
   }, []);
 
-  const [statusFilter, setStatusFilter] = useState('');
+  const handleTerminate = async (e) => {
+    if (!confirm(`เปลี่ยนสถานะ ${e.first_name} ${e.last_name} เป็น Terminated?`)) return;
+    await api.put(`/employees/${e.employee_id}`, { ...e, employment_status: 'Terminated' });
+    load();
+  };
+
+  const handleDelete = async (e) => {
+    if (!confirm(`⚠️ ลบ ${e.first_name} ${e.last_name} ออกจากระบบถาวร?`)) return;
+    try { await api.delete(`/employees/${e.employee_id}`); load(); }
+    catch (err) { alert(err.response?.data?.error || 'เกิดข้อผิดพลาด'); }
+  };
 
   const filtered = employees.filter(e => {
     const matchSearch = `${e.first_name} ${e.last_name} ${e.email}`.toLowerCase().includes(search.toLowerCase());
@@ -85,9 +103,43 @@ export default function Employees() {
                   <td>{e.department_name || '—'}</td>
                   <td><span className={`badge ${statusBadge[e.employment_status] || 'badge-gray'}`}>{e.employment_status}</span></td>
                   <td>
-                    <div style={{display:'flex', gap:6}}>
+                    <div style={{display:'flex', gap:6, position:'relative'}}>
                       <button className="btn-icon btn-sm" title="View" onClick={() => navigate(`/employees/${e.employee_id}`)}>👁</button>
-                      <button className="btn-icon btn-sm" title="More">⋯</button>
+                      {user.role === 'HR Admin' && (
+                        <button className="btn-icon btn-sm" title="More"
+                          onClick={ev => { ev.stopPropagation(); setOpenMenu(openMenu === e.employee_id ? null : e.employee_id); }}>
+                          ⋯
+                        </button>
+                      )}
+                      {openMenu === e.employee_id && (
+                        <div onClick={ev => ev.stopPropagation()} style={{
+                          position:'absolute', right:0, top:'110%', background:'var(--white)',
+                          border:'1px solid var(--border)', borderRadius:8, boxShadow:'var(--shadow-md)',
+                          zIndex:100, minWidth:180, overflow:'hidden'
+                        }}>
+                          <button onClick={() => { navigate(`/employees/${e.employee_id}`); setOpenMenu(null); }}
+                            style={{display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 14px', border:'none', background:'none', cursor:'pointer', fontSize:13, color:'var(--text)', textAlign:'left'}}
+                            onMouseEnter={e => e.currentTarget.style.background='var(--bg)'}
+                            onMouseLeave={e => e.currentTarget.style.background='none'}>
+                            ✏️ แก้ไข / ดูโปรไฟล์
+                          </button>
+                          {e.employment_status !== 'Terminated' && (
+                            <button onClick={() => { handleTerminate(e); setOpenMenu(null); }}
+                              style={{display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 14px', border:'none', background:'none', cursor:'pointer', fontSize:13, color:'var(--warning)', textAlign:'left'}}
+                              onMouseEnter={ev => ev.currentTarget.style.background='var(--bg)'}
+                              onMouseLeave={ev => ev.currentTarget.style.background='none'}>
+                              🚫 ให้ออกจากงาน
+                            </button>
+                          )}
+                          <div style={{borderTop:'1px solid var(--border)'}} />
+                          <button onClick={() => { handleDelete(e); setOpenMenu(null); }}
+                            style={{display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 14px', border:'none', background:'none', cursor:'pointer', fontSize:13, color:'var(--danger)', textAlign:'left'}}
+                            onMouseEnter={ev => ev.currentTarget.style.background='#fee2e2'}
+                            onMouseLeave={ev => ev.currentTarget.style.background='none'}>
+                            🗑 ลบออกจากระบบ
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </td>
                 </tr>

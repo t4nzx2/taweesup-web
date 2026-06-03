@@ -46,7 +46,28 @@ router.put('/:id', requireRole('HR Admin'), (req, res) => {
 });
 
 router.delete('/:id', requireRole('HR Admin'), (req, res) => {
-  db.prepare('DELETE FROM employees WHERE employee_id=?').run(req.params.id);
+  const id = req.params.id;
+  // Delete all related records first
+  const eid = Number(id);
+  // Disable FK checks, run all deletes, re-enable
+  db.prepare('PRAGMA foreign_keys = OFF').run();
+  try {
+    db.prepare('DELETE FROM users WHERE employee_id=?').run(eid);
+    db.prepare('DELETE FROM timesheets WHERE employee_id=?').run(eid);
+    db.prepare('DELETE FROM leave_requests WHERE employee_id=?').run(eid);
+    db.prepare('UPDATE leave_requests SET reviewed_by=NULL WHERE reviewed_by=?').run(eid);
+    db.prepare('DELETE FROM payroll WHERE employee_id=?').run(eid);
+    db.prepare('DELETE FROM performance_reviews WHERE employee_id=? OR reviewer_id=?').run(eid, eid);
+    db.prepare('DELETE FROM training_certifications WHERE employee_id=?').run(eid);
+    db.prepare('DELETE FROM benefits WHERE employee_id=?').run(eid);
+    db.prepare('DELETE FROM incidents WHERE employee_id=?').run(eid);
+    db.prepare('UPDATE incidents SET recorded_by=NULL WHERE recorded_by=?').run(eid);
+    db.prepare('UPDATE transactions SET recorded_by=NULL WHERE recorded_by=?').run(eid);
+    db.prepare('UPDATE departments SET manager_id=NULL WHERE manager_id=?').run(eid);
+    db.prepare('DELETE FROM employees WHERE employee_id=?').run(eid);
+  } finally {
+    db.prepare('PRAGMA foreign_keys = ON').run();
+  }
   res.json({ success: true });
 });
 

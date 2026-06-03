@@ -6,6 +6,7 @@ import {
 import api from '../api';
 import { useAuth } from '../AuthContext';
 import { useLang } from '../LangContext';
+import { toBE } from '../utils';
 
 const INCOME_CATEGORIES = ['รายได้จากลูกค้า', 'ค่าบริการ', 'ดอกเบี้ย', 'เงินอุดหนุน', 'อื่นๆ'];
 const EXPENSE_CATEGORIES = ['เงินเดือนพนักงาน', 'สวัสดิการ', 'ค่าฝึกอบรม', 'ค่าสำนักงาน', 'ค่าอุปกรณ์', 'ค่าสาธารณูปโภค', 'อื่นๆ'];
@@ -165,7 +166,7 @@ export default function Accounts() {
             <tbody>
               {transactions.map(tx => (
                 <tr key={tx.transaction_id}>
-                  <td style={{color:'var(--text-muted)',fontSize:12}}>{tx.transaction_date}</td>
+                  <td style={{color:'var(--text-muted)',fontSize:12}}>{toBE(tx.transaction_date)}</td>
                   <td>
                     <span className={`badge ${tx.type === 'Income' ? 'badge-green' : 'badge-red'}`}>
                       {tx.type === 'Income' ? '↑ รายรับ' : '↓ รายจ่าย'}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../api';
 import { useAuth } from '../AuthContext';
 import { useLang } from '../LangContext';
+import { formatTHB, toBE } from '../utils';
 
 export default function Payroll() {
   const { user } = useAuth();
@@ -36,11 +37,11 @@ export default function Payroll() {
               {records.map(r => (
                 <tr key={r.payroll_id}>
                   {isHR && <td>{r.employee_name}</td>}
-                  <td>{r.pay_period_start} – {r.pay_period_end}</td>
-                  <td>${r.gross_pay?.toLocaleString()}</td>
-                  <td>${r.tax_deductions?.toLocaleString()}</td>
-                  <td><strong>${r.net_pay?.toLocaleString()}</strong></td>
-                  <td>{r.payment_date || '—'}</td>
+                  <td>{toBE(r.pay_period_start)} – {toBE(r.pay_period_end)}</td>
+                  <td>{formatTHB(r.gross_pay)}</td>
+                  <td>{formatTHB(r.tax_deductions)}</td>
+                  <td><strong>{formatTHB(r.net_pay)}</strong></td>
+                  <td>{toBE(r.payment_date)}</td>
                 </tr>
               ))}
             </tbody>
