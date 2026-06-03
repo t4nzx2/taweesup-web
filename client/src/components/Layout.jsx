@@ -33,8 +33,10 @@ export default function Layout() {
   const location = useLocation();
 
   const [search, setSearch] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const handleLogout = () => { logout(); navigate('/login'); };
+  const closeSidebar = () => setSidebarOpen(false);
   const isHRorMgr = ['HR Admin', 'Manager'].includes(user.role);
 
   const handleSearch = (e) => {
@@ -68,6 +70,7 @@ export default function Layout() {
     .filter(i => !i.restricted || isHRorMgr)
     .map(item => (
       <NavLink key={item.to} to={item.to} end={item.exact}
+        onClick={closeSidebar}
         className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}>
         <span className="nav-icon">{item.icon}</span>
         <span>{item.label || t(item.key)}</span>
@@ -76,10 +79,12 @@ export default function Layout() {
 
   return (
     <div className="layout">
-      <aside className="sidebar">
+      <div className={`sidebar-overlay${sidebarOpen ? ' open' : ''}`} onClick={closeSidebar} />
+      <aside className={`sidebar${sidebarOpen ? ' open' : ''}`}>
         <div className="sidebar-brand">
           <div className="brand-logo">T</div>
           <span className="brand-text">Taweesup.Web</span>
+          <button className="hamburger" onClick={closeSidebar} style={{marginLeft:'auto'}}>✕</button>
         </div>
 
         <div className="nav-section">
@@ -114,6 +119,7 @@ export default function Layout() {
 
       <div className="main-area">
         <header className="topbar">
+          <button className="hamburger" onClick={() => setSidebarOpen(true)}>☰</button>
           <span className="topbar-title">{pageTitle}</span>
           <div className="topbar-search">
             <span className="si">🔍</span>

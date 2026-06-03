@@ -116,6 +116,28 @@ tr:hover td { background: var(--bg); }
 .fw-600 { font-weight: 600; }
 .flex-center { display: flex; align-items: center; gap: 8px; }
 
+/* ── Mobile responsive helpers ── */
+@media (max-width: 768px) {
+  .page-header { flex-wrap: wrap; gap: 12px; }
+  .page-header h1 { font-size: 18px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .modal { padding: 20px; }
+  /* Force any inline 3-col / 2-col grids to stack */
+  [style*="grid-template-columns: repeat(3,1fr)"],
+  [style*="grid-template-columns: repeat(3, 1fr)"],
+  [style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+  [style*="grid-template-columns: 1.6fr 1fr"],
+  [style*="grid-template-columns: 2fr 1fr"],
+  [style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+  /* Tables scroll horizontally instead of overflowing */
+  .card { overflow-x: auto; }
+  table { min-width: 520px; }
+}
+
 /* ── Dark theme ── */
 [data-theme="dark"] {
   --primary: #7c74ff;

@@ -63,6 +63,40 @@
 
 .main-content { flex: 1; overflow-y: auto; padding: 24px; }
 
+/* ── Mobile responsive ── */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed; top: 0; left: 0; height: 100vh;
+    transform: translateX(-100%); transition: transform 0.25s ease;
+    z-index: 200; box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+  }
+  .sidebar.open { transform: translateX(0); }
+
+  .sidebar-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4); z-index: 199;
+  }
+  .sidebar-overlay.open { display: block; }
+
+  .main-area { width: 100%; }
+  .main-content { padding: 16px; }
+
+  .topbar { padding: 0 16px; gap: 10px; }
+  .topbar-search { width: 160px; }
+  .topbar-title { font-size: 15px; }
+
+  .hamburger {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border: none; background: none;
+    font-size: 20px; cursor: pointer; color: var(--text); flex-shrink: 0;
+  }
+}
+
+@media (min-width: 769px) {
+  .hamburger { display: none; }
+  .sidebar-overlay { display: none !important; }
+}
+
 /* ── Dark mode overrides for Layout ── */
 [data-theme="dark"] .sidebar { background: #111827; border-color: #1f2937; }
 [data-theme="dark"] .sidebar-brand { border-color: #1f2937; }
