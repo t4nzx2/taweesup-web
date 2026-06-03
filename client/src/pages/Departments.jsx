@@ -89,18 +89,29 @@ function DeptModal({ initial, onClose, onSaved }) {
   const [employees, setEmployees] = useState([]);
   const [form, setForm] = useState(initial ? { department_name: initial.department_name, manager_id: initial.manager_id || '', budget: initial.budget || '' } : { department_name:'', manager_id:'', budget:'' });
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
   const { t } = useLang();
 
-  useEffect(() => { api.get('/employees').then(r => setEmployees(r.data)); }, []);
+  useEffect(() => { api.get('/employees').then(r => setEmployees(r.data)).catch(() => {}); }, []);
   const set = (k, v) => setForm(f => ({...f, [k]: v}));
 
   const submit = async (e) => {
     e.preventDefault();
+    setError(''); setSaving(true);
     try {
-      if (initial) await api.put(`/departments/${initial.department_id}`, form);
-      else await api.post('/departments', form);
+      const payload = {
+        department_name: form.department_name,
+        manager_id: form.manager_id || null,
+        budget: form.budget || 0,
+      };
+      if (initial) await api.put(`/departments/${initial.department_id}`, payload);
+      else await api.post('/departments', payload);
       onSaved();
-    } catch (err) { setError(err.response?.data?.error || t('error')); }
+    } catch (err) {
+      setError(err.response?.data?.error || err.message || 'Network error');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -121,7 +132,7 @@ function DeptModal({ initial, onClose, onSaved }) {
           {error && <p style={{color:'var(--danger)', marginTop:8, fontSize:13}}>{error}</p>}
           <div className="modal-footer">
             <button type="button" className="btn btn-secondary" onClick={onClose}>{t('cancel')}</button>
-            <button type="submit" className="btn btn-primary">{t('save')}</button>
+            <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? '...' : t('save')}</button>
           </div>
         </form>
       </div>
