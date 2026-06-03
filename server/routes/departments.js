@@ -9,6 +9,21 @@ router.get('/', (req, res) => {
     SELECT d.*, e.first_name || ' ' || e.last_name as manager_name
     FROM departments d LEFT JOIN employees e ON d.manager_id = e.employee_id
   `).all();
+  // Attach members of each department
+  const memberStmt = db.prepare(`
+    SELECT employee_id, first_name || ' ' || last_name as name, job_title
+    FROM employees WHERE department_id = ? ORDER BY first_name
+  `);
+  // job_title not stored on employees directly; join positions
+  const memberStmt2 = db.prepare(`
+    SELECT e.employee_id, e.first_name || ' ' || e.last_name as name, p.job_title
+    FROM employees e LEFT JOIN positions p ON e.position_id = p.position_id
+    WHERE e.department_id = ? ORDER BY e.first_name
+  `);
+  for (const d of rows) {
+    d.members = memberStmt2.all(d.department_id);
+    d.member_count = d.members.length;
+  }
   res.json(rows);
 });
 
