@@ -89,6 +89,9 @@ function PayrollModal({ onClose, onSaved }) {
             </div>
             <div className="form-group"><label>{t('paymentDate')}</label><input type="date" value={form.payment_date} onChange={e => set('payment_date', e.target.value)} /></div>
           </div>
+          <p style={{fontSize:12, color:'var(--text-muted)', marginTop:10, padding:'8px 12px', background:'var(--bg)', borderRadius:8}}>
+            ℹ️ {t('lateDeduction')}: ระบบจะหักเงินมาสายในช่วงเวลานี้ให้อัตโนมัติ (Late deductions are added automatically)
+          </p>
           {error && <p style={{color:'var(--danger)', marginTop:8, fontSize:13}}>{error}</p>}
           <div className="modal-footer">
             <button type="button" className="btn btn-secondary" onClick={onClose}>{t('cancel')}</button>

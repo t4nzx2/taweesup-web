@@ -80,7 +80,7 @@ export default function Employees() {
                 <th style={{width:32}}><input type="checkbox" /></th>
                 <th>Employee ID</th>
                 <th>{t('name')}</th>
-                <th>{t('email')}</th>
+                <th>{t('phone')}</th>
                 <th>{t('jobTitle')}</th>
                 <th>{t('department')}</th>
                 <th>{t('status')}</th>
@@ -98,7 +98,7 @@ export default function Employees() {
                       <span style={{fontWeight:600}}>{e.first_name} {e.last_name}</span>
                     </div>
                   </td>
-                  <td style={{color:'var(--text-muted)'}}>{e.email}</td>
+                  <td style={{color:'var(--text-muted)'}}>{e.phone_number || '—'}</td>
                   <td style={{color:'var(--text-muted)'}}>{e.job_title || '—'}</td>
                   <td>{e.department_name || '—'}</td>
                   <td><span className={`badge ${statusBadge[e.employment_status] || 'badge-gray'}`}>{e.employment_status}</span></td>
@@ -161,7 +161,7 @@ export default function Employees() {
 }
 
 function AddEmployeeModal({ departments, positions, onClose, onSaved }) {
-  const [form, setForm] = useState({ first_name:'', last_name:'', email:'', phone_number:'', date_of_birth:'', hire_date:'', employment_status:'Active', department_id:'', position_id:'' });
+  const [form, setForm] = useState({ first_name:'', last_name:'', phone_number:'', hire_date:'', employment_status:'Active', department_id:'', position_id:'' });
   const [error, setError] = useState('');
   const { t } = useLang();
 
@@ -181,9 +181,7 @@ function AddEmployeeModal({ departments, positions, onClose, onSaved }) {
           <div className="form-grid">
             <div className="form-group"><label>{t('firstName')}</label><input required value={form.first_name} onChange={e => set('first_name', e.target.value)} /></div>
             <div className="form-group"><label>{t('lastName')}</label><input required value={form.last_name} onChange={e => set('last_name', e.target.value)} /></div>
-            <div className="form-group"><label>{t('email')}</label><input type="email" required value={form.email} onChange={e => set('email', e.target.value)} /></div>
             <div className="form-group"><label>{t('phone')}</label><input value={form.phone_number} onChange={e => set('phone_number', e.target.value)} /></div>
-            <div className="form-group"><label>{t('dateOfBirth')}</label><input type="date" value={form.date_of_birth} onChange={e => set('date_of_birth', e.target.value)} /></div>
             <div className="form-group"><label>{t('hireDate')}</label><input type="date" required value={form.hire_date} onChange={e => set('hire_date', e.target.value)} /></div>
             <div className="form-group"><label>{t('department')}</label>
               <select value={form.department_id} onChange={e => set('department_id', e.target.value)}>

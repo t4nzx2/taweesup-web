@@ -12,9 +12,7 @@ export default function EmployeeProfile() {
   const navigate = useNavigate();
   const [emp, setEmp] = useState(null);
   const [tab, setTab] = useState('info');
-  const [reviews, setReviews] = useState([]);
-  const [training, setTraining] = useState([]);
-  const [benefits, setBenefits] = useState([]);
+  const [reviewSummary, setReviewSummary] = useState(null);
   const [account, setAccount] = useState(undefined); // undefined=loading, null=no account
 
   const loadAccount = () => {
@@ -25,9 +23,7 @@ export default function EmployeeProfile() {
 
   useEffect(() => {
     api.get(`/employees/${id}`).then(r => setEmp(r.data)).catch(() => navigate('/employees'));
-    api.get(`/reviews?employee_id=${id}`).then(r => setReviews(r.data));
-    api.get(`/training?employee_id=${id}`).then(r => setTraining(r.data));
-    if (user.role !== 'Employee') api.get(`/benefits?employee_id=${id}`).then(r => setBenefits(r.data));
+    api.get(`/reviews/summary?employee_id=${id}`).then(r => setReviewSummary(r.data)).catch(() => {});
     loadAccount();
   }, [id]);
 
@@ -72,7 +68,7 @@ export default function EmployeeProfile() {
           <div style={{flex:1}}>
             <h2 style={{fontSize:22, fontWeight:800}}>{emp.first_name} {emp.last_name}</h2>
             <p style={{color:'var(--text-muted)'}}>{emp.job_title || t('noTitle')} · {emp.department_name || t('noDept')}</p>
-            <p style={{color:'var(--text-muted)', fontSize:12}}>{emp.email} · {emp.phone_number}</p>
+            <p style={{color:'var(--text-muted)', fontSize:12}}>{emp.phone_number || '—'}</p>
           </div>
           <span className={`badge ${emp.employment_status === 'Active' ? 'badge-green' : emp.employment_status === 'On Leave' ? 'badge-yellow' : 'badge-red'}`}>{emp.employment_status}</span>
         </div>
@@ -93,29 +89,38 @@ export default function EmployeeProfile() {
           <div className="form-grid">
             <InfoRow label={t('employeeId')} value={`#${emp.employee_id}`} />
             <InfoRow label={t('hireDate')} value={toBE(emp.hire_date)} />
-            <InfoRow label={t('dateOfBirth')} value={toBE(emp.date_of_birth)} />
             <InfoRow label={t('phone')} value={emp.phone_number || '—'} />
-            <InfoRow label={t('email')} value={emp.email} />
             <InfoRow label={t('status')} value={emp.employment_status} />
+            <InfoRow label={t('department')} value={emp.department_name || '—'} />
+            <InfoRow label={t('jobTitle')} value={emp.job_title || '—'} />
           </div>
         </div>
       )}
 
       {tab === 'reviews' && (
         <div className="card">
-          <h3 style={{marginBottom:12}}>{t('performanceReviews')}</h3>
-          {reviews.length === 0 ? <p className="empty">{t('noReviews')}</p> : (
+          <h3 style={{marginBottom:12}}>{t('reviewSummary')}</h3>
+          <p style={{color:'var(--text-muted)', fontSize:12, marginBottom:12}}>📊 {t('anonymousNote')}</p>
+          {!reviewSummary || reviewSummary.review_count === 0 ? <p className="empty">{t('noReviewsYet')}</p> : (
             <table>
-              <thead><tr><th>{t('date')}</th><th>{t('reviewer')}</th><th>{t('score')}</th><th>{t('comments')}</th></tr></thead>
+              <thead><tr><th>{t('avgByTopic')}</th><th style={{textAlign:'right'}}>{t('score')} (/5)</th></tr></thead>
               <tbody>
-                {reviews.map(r => (
-                  <tr key={r.review_id}>
-                    <td>{r.review_date}</td>
-                    <td>{r.reviewer_name}</td>
-                    <td>{'★'.repeat(r.performance_score)}{'☆'.repeat(5 - r.performance_score)}</td>
-                    <td>{r.comments || '—'}</td>
+                {[
+                  ['topicCleanliness','avg_cleanliness'],['topicTeamwork','avg_teamwork'],
+                  ['topicService','avg_service'],['topicRetention','avg_retention'],['topicProblem','avg_problem'],
+                ].map(([lbl, key]) => (
+                  <tr key={key}>
+                    <td>{t(lbl)}</td>
+                    <td style={{textAlign:'right'}}>
+                      <span style={{color:'#f59e0b'}}>{'★'.repeat(Math.round(reviewSummary[key]||0))}{'☆'.repeat(5-Math.round(reviewSummary[key]||0))}</span>
+                      <strong style={{marginLeft:8}}>{reviewSummary[key] ?? '—'}</strong>
+                    </td>
                   </tr>
                 ))}
+                <tr>
+                  <td style={{fontWeight:700}}>{t('overallAvg')} ({reviewSummary.review_count} {t('reviewCount')})</td>
+                  <td style={{textAlign:'right', fontWeight:700}}>{reviewSummary.avg_overall ?? '—'} / 5</td>
+                </tr>
               </tbody>
             </table>
           )}

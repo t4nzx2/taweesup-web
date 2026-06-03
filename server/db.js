@@ -130,4 +130,16 @@ db.exec(`
   );
 `);
 
+// ---- Migrations: add new columns if they don't exist ----
+function addColumn(table, colDef) {
+  try { db.prepare(`ALTER TABLE ${table} ADD COLUMN ${colDef}`).run(); } catch (e) { /* already exists */ }
+}
+addColumn('timesheets', 'is_late INTEGER DEFAULT 0');
+addColumn('timesheets', 'late_deduction REAL DEFAULT 0');
+addColumn('performance_reviews', 'score_cleanliness INTEGER');
+addColumn('performance_reviews', 'score_teamwork INTEGER');
+addColumn('performance_reviews', 'score_service INTEGER');
+addColumn('performance_reviews', 'score_retention INTEGER');
+addColumn('performance_reviews', 'score_problem INTEGER');
+
 module.exports = db;

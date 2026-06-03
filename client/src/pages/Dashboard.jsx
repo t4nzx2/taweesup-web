@@ -137,7 +137,7 @@ export default function Dashboard() {
                     <div className="avatar avatar-sm">{e.first_name[0]}{e.last_name[0]}</div>
                     <div>
                       <div style={{fontWeight:600, fontSize:13}}>{e.first_name} {e.last_name}</div>
-                      <div style={{fontSize:11, color:'var(--text-muted)'}}>{e.email}</div>
+                      <div style={{fontSize:11, color:'var(--text-muted)'}}>{e.phone_number || '—'}</div>
                     </div>
                   </div>
                 </td>

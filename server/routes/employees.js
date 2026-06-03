@@ -28,20 +28,26 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', requireRole('HR Admin'), (req, res) => {
-  const { first_name, last_name, email, phone_number, date_of_birth, hire_date, employment_status, department_id, position_id } = req.body;
+  const { first_name, last_name, phone_number, hire_date, employment_status, department_id, position_id } = req.body;
+  // email is required-unique in schema but no longer collected; auto-generate placeholder
+  const email = req.body.email || `emp_${Date.now()}@local`;
+  const date_of_birth = req.body.date_of_birth || null;
   const result = db.prepare(`
     INSERT INTO employees (first_name, last_name, email, phone_number, date_of_birth, hire_date, employment_status, department_id, position_id)
     VALUES (?,?,?,?,?,?,?,?,?)
-  `).run(first_name, last_name, email, phone_number, date_of_birth, hire_date, employment_status || 'Active', department_id, position_id);
+  `).run(first_name, last_name, email, phone_number, date_of_birth, hire_date || new Date().toISOString().slice(0,10), employment_status || 'Active', department_id || null, position_id || null);
   res.status(201).json({ employee_id: result.lastInsertRowid });
 });
 
 router.put('/:id', requireRole('HR Admin'), (req, res) => {
-  const { first_name, last_name, email, phone_number, date_of_birth, hire_date, employment_status, department_id, position_id } = req.body;
+  const { first_name, last_name, phone_number, hire_date, employment_status, department_id, position_id } = req.body;
+  const existing = db.prepare('SELECT email, date_of_birth FROM employees WHERE employee_id=?').get(req.params.id) || {};
+  const email = req.body.email || existing.email;
+  const date_of_birth = req.body.date_of_birth ?? existing.date_of_birth;
   db.prepare(`
     UPDATE employees SET first_name=?, last_name=?, email=?, phone_number=?, date_of_birth=?,
     hire_date=?, employment_status=?, department_id=?, position_id=? WHERE employee_id=?
-  `).run(first_name, last_name, email, phone_number, date_of_birth, hire_date, employment_status, department_id, position_id, req.params.id);
+  `).run(first_name, last_name, email, phone_number, date_of_birth, hire_date, employment_status, department_id || null, position_id || null, req.params.id);
   res.json({ success: true });
 });
 

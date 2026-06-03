@@ -211,6 +211,34 @@ const translations = {
     catEquipment: 'Equipment',
     catUtility: 'Utilities',
 
+    // Review topics
+    topicCleanliness: 'Store Cleanliness',
+    topicTeamwork: 'Teamwork with Colleagues',
+    topicService: 'Customer Service',
+    topicRetention: 'Customer Retention',
+    topicProblem: 'Problem Solving',
+    reviewSummary: 'Review Summary',
+    overallAvg: 'Overall Average',
+    reviewCount: 'reviews',
+    selectEmpToReview: 'Select an employee to review',
+    submitReview: 'Submit Review',
+    rateEmployee: 'Rate Employee',
+    anonymousNote: 'Reviews are anonymous - names are not shown',
+    noReviewsYet: 'No reviews yet',
+    chooseEmployee: 'Choose employee...',
+    avgByTopic: 'Average by Topic',
+
+    // Attendance summary
+    attendanceSummary: 'Attendance Summary',
+    daysWorked: 'Days Worked',
+    lateDays: 'Late Days',
+    lateDeduction: 'Late Deduction',
+    month: 'Month',
+    lateBadge: 'Late',
+    onTime: 'On Time',
+    lateNotice: 'You are late! Deduction',
+    lateRuleNote: 'Clock-in window: 07:30-07:45. After 07:45 = -10 THB, after 08:00 = -50 THB',
+
     // Status values
     statusActive: 'Active',
     statusOnLeave: 'On Leave',
@@ -450,6 +478,34 @@ const translations = {
     catOffice: 'ค่าสำนักงาน',
     catEquipment: 'ค่าอุปกรณ์',
     catUtility: 'ค่าสาธารณูปโภค',
+
+    // Review topics
+    topicCleanliness: 'ดูแลความสะอาดร้าน',
+    topicTeamwork: 'การอยู่ร่วมกับเพื่อนร่วมงาน',
+    topicService: 'การบริการลูกค้า',
+    topicRetention: 'การไม่ปล่อยลูกค้าหลุด',
+    topicProblem: 'การแก้ปัญหาลูกค้า',
+    reviewSummary: 'สรุปผลการประเมิน',
+    overallAvg: 'คะแนนเฉลี่ยรวม',
+    reviewCount: 'การประเมิน',
+    selectEmpToReview: 'เลือกพนักงานที่จะประเมิน',
+    submitReview: 'ส่งการประเมิน',
+    rateEmployee: 'ประเมินพนักงาน',
+    anonymousNote: 'การประเมินเป็นแบบไม่ระบุชื่อ - ไม่แสดงว่าใครประเมิน',
+    noReviewsYet: 'ยังไม่มีการประเมิน',
+    chooseEmployee: 'เลือกพนักงาน...',
+    avgByTopic: 'คะแนนเฉลี่ยแต่ละหัวข้อ',
+
+    // Attendance summary
+    attendanceSummary: 'สรุปการเข้างาน',
+    daysWorked: 'จำนวนวันทำงาน',
+    lateDays: 'จำนวนวันมาสาย',
+    lateDeduction: 'หักเงินมาสาย',
+    month: 'เดือน',
+    lateBadge: 'สาย',
+    onTime: 'ตรงเวลา',
+    lateNotice: 'คุณมาสาย! ถูกหักเงิน',
+    lateRuleNote: 'ลงเวลาเข้าได้ 07:30-07:45 หลัง 07:45 หัก 10 บาท, หลัง 08:00 หัก 50 บาท',
 
     // Status values
     statusActive: 'ทำงาน',

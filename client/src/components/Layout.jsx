@@ -12,11 +12,11 @@ const mainNav = [
   { to: '/departments', key: 'departments', icon: '⊞' },
   { to: '/timesheet', key: 'timesheet', icon: '◷' },
   { to: '/leave', key: 'leaveRequests', icon: '◫' },
+  { to: '/reviews', key: 'performance', icon: '★' },
 ];
 const mgmtNav = [
   { to: '/payroll', key: 'payroll', icon: '$', restricted: true },
   { to: '/accounts', key: 'accounting', icon: '฿', restricted: true },
-  { to: '/reviews', key: 'performance', icon: '★', restricted: true },
   { to: '/incidents', key: 'incidents', icon: '⚠', restricted: true },
 ];
 
