@@ -15,7 +15,7 @@ const mainNav = [
 ];
 const mgmtNav = [
   { to: '/payroll', key: 'payroll', icon: '$', restricted: true },
-  { to: '/accounts', key: 'accounts', icon: '฿', label: 'บัญชี', restricted: true },
+  { to: '/accounts', key: 'accounting', icon: '฿', restricted: true },
   { to: '/reviews', key: 'performance', icon: '★', restricted: true },
   { to: '/incidents', key: 'incidents', icon: '⚠', restricted: true },
 ];
@@ -23,7 +23,7 @@ const mgmtNav = [
 const pageTitles = {
   '/': 'Dashboard', '/employees': 'Employees', '/departments': 'Departments',
   '/timesheet': 'Timesheet', '/leave': 'Leave Requests', '/payroll': 'Payroll',
-  '/reviews': 'Performance', '/training': 'Training', '/benefits': 'Benefits', '/incidents': 'Incidents', '/accounts': 'บัญชี',
+  '/reviews': 'Performance', '/incidents': 'Incidents', '/accounts': 'Accounting',
 };
 
 export default function Layout() {

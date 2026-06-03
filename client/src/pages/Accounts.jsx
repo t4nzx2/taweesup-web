@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend
 } from 'recharts';
 import api from '../api';
@@ -8,12 +8,16 @@ import { useAuth } from '../AuthContext';
 import { useLang } from '../LangContext';
 import { toBE } from '../utils';
 
-const INCOME_CATEGORIES = ['รายได้จากลูกค้า', 'ค่าบริการ', 'ดอกเบี้ย', 'เงินอุดหนุน', 'อื่นๆ'];
-const EXPENSE_CATEGORIES = ['เงินเดือนพนักงาน', 'สวัสดิการ', 'ค่าฝึกอบรม', 'ค่าสำนักงาน', 'ค่าอุปกรณ์', 'ค่าสาธารณูปโภค', 'อื่นๆ'];
+// Category keys (stored value = key; label translated for display)
+const INCOME_CATS = ['catCustomer', 'catService', 'catInterest', 'catGrant', 'catOther'];
+const EXPENSE_CATS = ['catSalary', 'catBenefit', 'catTraining', 'catOffice', 'catEquipment', 'catUtility', 'catOther'];
 const COLORS = ['#6c63ff','#22c55e','#f59e0b','#3b82f6','#ef4444','#8b5cf6','#06b6d4'];
 
 const fmt = (n) => new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(n);
 const fmtShort = (n) => n >= 1000000 ? `${(n/1000000).toFixed(1)}M` : n >= 1000 ? `${(n/1000).toFixed(0)}k` : n;
+
+// Display a category: if it's a known key, translate; otherwise show raw (legacy data)
+const catLabel = (t, c) => (c && c.startsWith('cat')) ? t(c) : (c || '—');
 
 export default function Accounts() {
   const { user } = useAuth();
@@ -38,53 +42,47 @@ export default function Accounts() {
   useEffect(() => { loadTx(); }, [typeFilter, monthFilter]);
 
   const handleDelete = async (id) => {
-    if (!confirm('ลบรายการนี้หรือไม่?')) return;
+    if (!confirm(t('deleteTransConfirm'))) return;
     await api.delete(`/transactions/${id}`);
     loadSummary(); loadTx();
   };
 
   const netColor = summary.net >= 0 ? 'var(--success)' : 'var(--danger)';
-
-  // Pie data
-  const incomeByCategory = summary.byCategory.filter(c => c.type === 'Income');
-  const expenseByCategory = summary.byCategory.filter(c => c.type === 'Expense');
+  const expenseByCategory = summary.byCategory
+    .filter(c => c.type === 'Expense')
+    .map(c => ({ ...c, label: catLabel(t, c.category) }));
 
   return (
     <div>
       <div className="page-header">
-        <h1>ระบบบัญชี</h1>
+        <h1>{t('accounting')}</h1>
         {canManage && (
-          <div style={{display:'flex', gap:10}}>
-            <button className="btn btn-primary" onClick={() => { setEditing(null); setShowModal(true); }}>
-              + เพิ่มรายการ
-            </button>
-          </div>
+          <button className="btn btn-primary" onClick={() => { setEditing(null); setShowModal(true); }}>
+            {t('addTransaction')}
+          </button>
         )}
       </div>
 
       {/* Summary cards */}
       <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16, marginBottom:20}}>
-        <SummaryCard label="รายรับทั้งหมด" value={fmt(summary.income)} icon="↑" color="#22c55e" bg="#dcfce7" sub="Income" />
-        <SummaryCard label="รายจ่ายทั้งหมด" value={fmt(summary.expense)} icon="↓" color="#ef4444" bg="#fee2e2" sub="Expense" />
+        <SummaryCard label={t('totalIncome')} value={fmt(summary.income)} icon="↑" color="#22c55e" bg="#dcfce7" sub={t('income')} />
+        <SummaryCard label={t('totalExpense')} value={fmt(summary.expense)} icon="↓" color="#ef4444" bg="#fee2e2" sub={t('expense')} />
         <SummaryCard
-          label="ยอดคงเหลือสุทธิ"
+          label={t('netBalance')}
           value={fmt(summary.net)}
           icon={summary.net >= 0 ? '✓' : '!'}
           color={netColor}
           bg={summary.net >= 0 ? '#dcfce7' : '#fee2e2'}
-          sub={summary.net >= 0 ? 'กำไร' : 'ขาดทุน'}
+          sub={summary.net >= 0 ? t('profit') : t('loss')}
         />
       </div>
 
       {/* Charts */}
       <div style={{display:'grid', gridTemplateColumns:'2fr 1fr', gap:16, marginBottom:20}}>
-        {/* Area chart */}
         <div className="card">
-          <div className="card-header">
-            <span className="card-title">รายรับ-รายจ่าย รายเดือน</span>
-          </div>
+          <div className="card-header"><span className="card-title">{t('monthlyIncomeExpense')}</span></div>
           {summary.monthly.length === 0
-            ? <p className="empty" style={{padding:20}}>ยังไม่มีข้อมูล</p>
+            ? <p className="empty" style={{padding:20}}>{t('noData')}</p>
             : (
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart data={summary.monthly} margin={{top:5,right:10,left:-10,bottom:0}}>
@@ -101,29 +99,26 @@ export default function Accounts() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f2f7" />
                 <XAxis dataKey="month" tick={{fontSize:11,fill:'#8a93a8'}} axisLine={false} tickLine={false} />
                 <YAxis tick={{fontSize:11,fill:'#8a93a8'}} axisLine={false} tickLine={false} tickFormatter={fmtShort} />
-                <Tooltip formatter={(v,n) => [fmt(v), n==='income'?'รายรับ':'รายจ่าย']} contentStyle={{borderRadius:8,fontSize:12}} />
+                <Tooltip formatter={(v,n) => [fmt(v), n==='income'?t('income'):t('expense')]} contentStyle={{borderRadius:8,fontSize:12}} />
                 <Area type="monotone" dataKey="income" stroke="#22c55e" strokeWidth={2} fill="url(#gi)" name="income" />
                 <Area type="monotone" dataKey="expense" stroke="#ef4444" strokeWidth={2} fill="url(#ge)" name="expense" />
               </AreaChart>
             </ResponsiveContainer>
           )}
           <div style={{display:'flex',gap:16,justifyContent:'center',marginTop:8}}>
-            <Dot color="#22c55e" label="รายรับ" />
-            <Dot color="#ef4444" label="รายจ่าย" />
+            <Dot color="#22c55e" label={t('income')} />
+            <Dot color="#ef4444" label={t('expense')} />
           </div>
         </div>
 
-        {/* Pie — expense by category */}
         <div className="card">
-          <div className="card-header">
-            <span className="card-title">รายจ่ายตามหมวดหมู่</span>
-          </div>
+          <div className="card-header"><span className="card-title">{t('expenseByCategory')}</span></div>
           {expenseByCategory.length === 0
-            ? <p className="empty" style={{padding:20}}>ยังไม่มีข้อมูล</p>
+            ? <p className="empty" style={{padding:20}}>{t('noData')}</p>
             : (
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
-                <Pie data={expenseByCategory} dataKey="total" nameKey="category" cx="50%" cy="50%" outerRadius={75} paddingAngle={2}>
+                <Pie data={expenseByCategory} dataKey="total" nameKey="label" cx="50%" cy="50%" outerRadius={75} paddingAngle={2}>
                   {expenseByCategory.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
                 <Tooltip formatter={v => fmt(v)} contentStyle={{borderRadius:8,fontSize:12}} />
@@ -137,29 +132,29 @@ export default function Accounts() {
       {/* Transaction table */}
       <div className="card">
         <div className="card-header">
-          <span className="card-title">รายการธุรกรรม</span>
+          <span className="card-title">{t('transactionList')}</span>
           <div style={{display:'flex',gap:10}}>
             <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} style={{width:'auto',minWidth:130,fontSize:13}}>
-              <option value="">ทุกประเภท</option>
-              <option value="Income">รายรับ</option>
-              <option value="Expense">รายจ่าย</option>
+              <option value="">{t('allTypes')}</option>
+              <option value="Income">{t('income')}</option>
+              <option value="Expense">{t('expense')}</option>
             </select>
             <input type="month" value={monthFilter} onChange={e => setMonthFilter(e.target.value)} style={{width:'auto',fontSize:13}} />
           </div>
         </div>
 
         {transactions.length === 0
-          ? <p className="empty"><div className="empty-icon">📒</div>ยังไม่มีรายการ</p>
+          ? <p className="empty"><div className="empty-icon">📒</div>{t('noTransactions')}</p>
           : (
           <table>
             <thead>
               <tr>
-                <th>วันที่</th>
-                <th>ประเภท</th>
-                <th>หมวดหมู่</th>
-                <th>รายละเอียด</th>
-                <th style={{textAlign:'right'}}>จำนวนเงิน</th>
-                <th>บันทึกโดย</th>
+                <th>{t('transDate')}</th>
+                <th>{t('type')}</th>
+                <th>{t('category')}</th>
+                <th>{t('description')}</th>
+                <th style={{textAlign:'right'}}>{t('amount')}</th>
+                <th>{t('recordedByCol')}</th>
                 {canManage && <th></th>}
               </tr>
             </thead>
@@ -169,10 +164,10 @@ export default function Accounts() {
                   <td style={{color:'var(--text-muted)',fontSize:12}}>{toBE(tx.transaction_date)}</td>
                   <td>
                     <span className={`badge ${tx.type === 'Income' ? 'badge-green' : 'badge-red'}`}>
-                      {tx.type === 'Income' ? '↑ รายรับ' : '↓ รายจ่าย'}
+                      {tx.type === 'Income' ? `↑ ${t('income')}` : `↓ ${t('expense')}`}
                     </span>
                   </td>
-                  <td>{tx.category}</td>
+                  <td>{catLabel(t, tx.category)}</td>
                   <td style={{color:'var(--text-muted)'}}>{tx.description || '—'}</td>
                   <td style={{textAlign:'right', fontWeight:700, color: tx.type === 'Income' ? 'var(--success)' : 'var(--danger)'}}>
                     {tx.type === 'Income' ? '+' : '-'}{fmt(tx.amount)}
@@ -230,6 +225,7 @@ function Dot({ color, label }) {
 }
 
 function TxModal({ initial, onClose, onSaved }) {
+  const { t } = useLang();
   const [form, setForm] = useState(initial ? {
     type: initial.type, category: initial.category,
     amount: initial.amount, description: initial.description || '',
@@ -237,7 +233,7 @@ function TxModal({ initial, onClose, onSaved }) {
   } : { type: 'Income', category: '', amount: '', description: '', transaction_date: new Date().toISOString().slice(0,10) });
   const [error, setError] = useState('');
   const set = (k, v) => setForm(f => ({...f, [k]: v}));
-  const categories = form.type === 'Income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const categories = form.type === 'Income' ? INCOME_CATS : EXPENSE_CATS;
 
   const submit = async (e) => {
     e.preventDefault();
@@ -245,19 +241,18 @@ function TxModal({ initial, onClose, onSaved }) {
       if (initial) await api.put(`/transactions/${initial.transaction_id}`, form);
       else await api.post('/transactions', form);
       onSaved();
-    } catch (err) { setError(err.response?.data?.error || 'เกิดข้อผิดพลาด'); }
+    } catch (err) { setError(err.response?.data?.error || t('error')); }
   };
 
   return (
     <div className="modal-overlay">
       <div className="modal">
-        <h2>{initial ? 'แก้ไขรายการ' : 'เพิ่มรายการใหม่'}</h2>
+        <h2>{initial ? t('editTransactionTitle') : t('addTransactionTitle')}</h2>
         <form onSubmit={submit}>
           <div style={{display:'flex',flexDirection:'column',gap:14}}>
 
-            {/* Type toggle */}
             <div className="form-group">
-              <label>ประเภท</label>
+              <label>{t('type')}</label>
               <div style={{display:'flex',gap:10,marginTop:4}}>
                 {['Income','Expense'].map(tp => (
                   <button key={tp} type="button"
@@ -266,8 +261,8 @@ function TxModal({ initial, onClose, onSaved }) {
                       background: form.type===tp ? (tp==='Income'?'#dcfce7':'#fee2e2') : 'transparent',
                       color: form.type===tp ? (tp==='Income'?'var(--success)':'var(--danger)') : 'var(--text-muted)',
                       fontWeight:600, fontSize:13, cursor:'pointer'}}
-                    onClick={() => set('type', tp)}>
-                    {tp==='Income' ? '↑ รายรับ' : '↓ รายจ่าย'}
+                    onClick={() => { set('type', tp); set('category', ''); }}>
+                    {tp==='Income' ? `↑ ${t('income')}` : `↓ ${t('expense')}`}
                   </button>
                 ))}
               </div>
@@ -275,33 +270,33 @@ function TxModal({ initial, onClose, onSaved }) {
 
             <div className="form-grid">
               <div className="form-group">
-                <label>หมวดหมู่</label>
+                <label>{t('category')}</label>
                 <select required value={form.category} onChange={e => set('category', e.target.value)}>
-                  <option value="">เลือกหมวดหมู่...</option>
-                  {categories.map(c => <option key={c}>{c}</option>)}
+                  <option value="">{t('selectCategory')}</option>
+                  {categories.map(c => <option key={c} value={c}>{t(c)}</option>)}
                 </select>
               </div>
               <div className="form-group">
-                <label>จำนวนเงิน (บาท)</label>
+                <label>{t('amountBaht')}</label>
                 <input type="number" min="0" step="0.01" required value={form.amount} onChange={e => set('amount', e.target.value)} placeholder="0.00" />
               </div>
             </div>
 
             <div className="form-group">
-              <label>วันที่</label>
+              <label>{t('transDate')}</label>
               <input type="date" required value={form.transaction_date} onChange={e => set('transaction_date', e.target.value)} />
             </div>
 
             <div className="form-group">
-              <label>รายละเอียด</label>
-              <textarea rows={3} value={form.description} onChange={e => set('description', e.target.value)} placeholder="บันทึกรายละเอียดเพิ่มเติม..." />
+              <label>{t('description')}</label>
+              <textarea rows={3} value={form.description} onChange={e => set('description', e.target.value)} placeholder={t('detailsNote')} />
             </div>
           </div>
 
           {error && <p style={{color:'var(--danger)',marginTop:8,fontSize:13}}>{error}</p>}
           <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>ยกเลิก</button>
-            <button type="submit" className="btn btn-primary">บันทึก</button>
+            <button type="button" className="btn btn-secondary" onClick={onClose}>{t('cancel')}</button>
+            <button type="submit" className="btn btn-primary">{t('save')}</button>
           </div>
         </form>
       </div>
