@@ -9,6 +9,7 @@ export default function Payroll() {
   const { t } = useLang();
   const [records, setRecords] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [editing, setEditing] = useState(null);
   const isHR = user.role === 'HR Admin';
 
   const load = () => {
@@ -18,11 +19,17 @@ export default function Payroll() {
 
   useEffect(() => { load(); }, []);
 
+  const handleDelete = async (id) => {
+    if (!confirm('ลบรายการเงินเดือนนี้หรือไม่?')) return;
+    await api.delete(`/payroll/${id}`);
+    load();
+  };
+
   return (
     <div>
       <div className="page-header">
         <h1>{t('payroll')}</h1>
-        {isHR && <button className="btn btn-primary" onClick={() => setShowModal(true)}>{t('addPayroll')}</button>}
+        {isHR && <button className="btn btn-primary" onClick={() => { setEditing(null); setShowModal(true); }}>{t('addPayroll')}</button>}
       </div>
       <div className="card">
         {records.length === 0 ? <p className="empty">{t('noPayrollRecords')}</p> : (
@@ -31,6 +38,7 @@ export default function Payroll() {
               <tr>
                 {isHR && <th>{t('employee')}</th>}
                 <th>{t('period')}</th><th>{t('grossPay')}</th><th>{t('tax')}</th><th>{t('netPay')}</th><th>{t('paymentDate')}</th>
+                {isHR && <th></th>}
               </tr>
             </thead>
             <tbody>
@@ -42,20 +50,32 @@ export default function Payroll() {
                   <td>{formatTHB(r.tax_deductions)}</td>
                   <td><strong>{formatTHB(r.net_pay)}</strong></td>
                   <td>{toBE(r.payment_date)}</td>
+                  {isHR && (
+                    <td>
+                      <div style={{display:'flex', gap:6}}>
+                        <button className="btn-icon btn-sm" title={t('edit')} onClick={() => { setEditing(r); setShowModal(true); }}>✏</button>
+                        <button className="btn-icon btn-sm" style={{color:'var(--danger)'}} onClick={() => handleDelete(r.payroll_id)}>🗑</button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </div>
-      {showModal && <PayrollModal onClose={() => setShowModal(false)} onSaved={() => { setShowModal(false); load(); }} />}
+      {showModal && <PayrollModal initial={editing} onClose={() => { setShowModal(false); setEditing(null); }} onSaved={() => { setShowModal(false); setEditing(null); load(); }} />}
     </div>
   );
 }
 
-function PayrollModal({ onClose, onSaved }) {
+function PayrollModal({ initial, onClose, onSaved }) {
   const [employees, setEmployees] = useState([]);
-  const [form, setForm] = useState({ employee_id:'', pay_period_start:'', pay_period_end:'', gross_pay:'', tax_deductions:'', payment_date:'' });
+  const [form, setForm] = useState(initial ? {
+    employee_id: initial.employee_id,
+    pay_period_start: initial.pay_period_start, pay_period_end: initial.pay_period_end,
+    gross_pay: initial.gross_pay, tax_deductions: initial.tax_deductions, payment_date: initial.payment_date || ''
+  } : { employee_id:'', pay_period_start:'', pay_period_end:'', gross_pay:'', tax_deductions:'', payment_date:'' });
   const [error, setError] = useState('');
   const { t } = useLang();
 
@@ -64,19 +84,22 @@ function PayrollModal({ onClose, onSaved }) {
 
   const submit = async (e) => {
     e.preventDefault();
-    try { await api.post('/payroll', form); onSaved(); }
-    catch (err) { setError(err.response?.data?.error || t('error')); }
+    try {
+      if (initial) await api.put(`/payroll/${initial.payroll_id}`, form);
+      else await api.post('/payroll', form);
+      onSaved();
+    } catch (err) { setError(err.response?.data?.error || t('error')); }
   };
 
   return (
     <div className="modal-overlay">
       <div className="modal">
-        <h2>{t('addPayrollTitle')}</h2>
+        <h2>{initial ? t('editPayrollTitle') : t('addPayrollTitle')}</h2>
         <form onSubmit={submit}>
           <div style={{display:'flex', flexDirection:'column', gap:12}}>
             <div className="form-group">
               <label>{t('employee')}</label>
-              <select required value={form.employee_id} onChange={e => set('employee_id', e.target.value)}>
+              <select required value={form.employee_id} onChange={e => set('employee_id', e.target.value)} disabled={!!initial}>
                 <option value="">{t('selectEmployee')}</option>
                 {employees.map(e => <option key={e.employee_id} value={e.employee_id}>{e.first_name} {e.last_name}</option>)}
               </select>
@@ -89,9 +112,11 @@ function PayrollModal({ onClose, onSaved }) {
             </div>
             <div className="form-group"><label>{t('paymentDate')}</label><input type="date" value={form.payment_date} onChange={e => set('payment_date', e.target.value)} /></div>
           </div>
-          <p style={{fontSize:12, color:'var(--text-muted)', marginTop:10, padding:'8px 12px', background:'var(--bg)', borderRadius:8}}>
-            ℹ️ {t('lateDeduction')}: ระบบจะหักเงินมาสายในช่วงเวลานี้ให้อัตโนมัติ (Late deductions are added automatically)
-          </p>
+          {!initial && (
+            <p style={{fontSize:12, color:'var(--text-muted)', marginTop:10, padding:'8px 12px', background:'var(--bg)', borderRadius:8}}>
+              ℹ️ {t('lateDeduction')}: ระบบจะหักเงินมาสายในช่วงเวลานี้ให้อัตโนมัติ (Late deductions are added automatically)
+            </p>
+          )}
           {error && <p style={{color:'var(--danger)', marginTop:8, fontSize:13}}>{error}</p>}
           <div className="modal-footer">
             <button type="button" className="btn btn-secondary" onClick={onClose}>{t('cancel')}</button>

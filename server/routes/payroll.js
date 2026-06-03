@@ -41,4 +41,19 @@ router.post('/', requireRole('HR Admin'), (req, res) => {
   res.status(201).json({ payroll_id: result.lastInsertRowid, late_deduction: late });
 });
 
+// Edit payroll record
+router.put('/:id', requireRole('HR Admin'), (req, res) => {
+  const { pay_period_start, pay_period_end, gross_pay, tax_deductions, payment_date } = req.body;
+  const net_pay = Number(gross_pay) - Number(tax_deductions || 0);
+  db.prepare(`UPDATE payroll SET pay_period_start=?, pay_period_end=?, gross_pay=?, tax_deductions=?, net_pay=?, payment_date=? WHERE payroll_id=?`)
+    .run(pay_period_start, pay_period_end, gross_pay, tax_deductions, net_pay, payment_date, req.params.id);
+  res.json({ success: true });
+});
+
+// Delete payroll record
+router.delete('/:id', requireRole('HR Admin'), (req, res) => {
+  db.prepare('DELETE FROM payroll WHERE payroll_id=?').run(req.params.id);
+  res.json({ success: true });
+});
+
 module.exports = router;
