@@ -261,6 +261,24 @@ const translations = {
     retirement: 'Retirement',
     vision: 'Vision',
 
+    // Announcements
+    announcements: 'Announcements',
+    newAnnouncement: '+ New Announcement',
+    noAnnouncements: 'No announcements yet.',
+    announcementTitle: 'Title',
+    announcementBody: 'Message',
+    announcementTitlePlaceholder: 'e.g. Office closed on Monday',
+    announcementBodyPlaceholder: 'Write your announcement here...',
+    pinToTop: '📌 Pin to top',
+    postAnnouncement: 'Post Announcement',
+    posting: 'Posting...',
+    pinBtn: '📌 Pin',
+    unpinBtn: '📌 Unpin',
+    deleteAnnouncement: 'Delete',
+    deleteAnnouncementConfirm: 'Delete this announcement?',
+    postedBy: 'Posted by',
+    viewAll: 'View All →',
+
     // Common
     select: 'Select...',
     noData: 'No data',
@@ -529,6 +547,24 @@ const translations = {
     dental: 'ทันตกรรม',
     retirement: 'เกษียณอายุ',
     vision: 'สายตา',
+
+    // Announcements
+    announcements: 'ประกาศ',
+    newAnnouncement: '+ ประกาศใหม่',
+    noAnnouncements: 'ยังไม่มีประกาศ',
+    announcementTitle: 'หัวข้อ',
+    announcementBody: 'ข้อความ',
+    announcementTitlePlaceholder: 'เช่น หยุดทำการวันจันทร์',
+    announcementBodyPlaceholder: 'เขียนประกาศที่นี่...',
+    pinToTop: '📌 ปักหมุดไว้ด้านบน',
+    postAnnouncement: 'โพสต์ประกาศ',
+    posting: 'กำลังโพสต์...',
+    pinBtn: '📌 ปักหมุด',
+    unpinBtn: '📌 เอาออก',
+    deleteAnnouncement: 'ลบ',
+    deleteAnnouncementConfirm: 'ลบประกาศนี้หรือไม่?',
+    postedBy: 'โพสต์โดย',
+    viewAll: 'ดูทั้งหมด →',
 
     // Common
     select: 'เลือก...',

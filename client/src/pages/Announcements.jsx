@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import api from '../api';
 import { useAuth } from '../AuthContext';
+import { useLang } from '../LangContext';
 import { toBE } from '../utils';
 
 export default function Announcements() {
   const { user } = useAuth();
+  const { t } = useLang();
   const isHR = user.role === 'HR Admin';
   const [items, setItems] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -31,7 +33,7 @@ export default function Announcements() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Delete this announcement?')) return;
+    if (!confirm(t('deleteAnnouncementConfirm'))) return;
     await api.delete(`/announcements/${id}`);
     load();
   };
@@ -39,10 +41,10 @@ export default function Announcements() {
   return (
     <div>
       <div className="page-header">
-        <h1>📢 Announcements</h1>
+        <h1>📢 {t('announcements')}</h1>
         {isHR && (
           <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-            + New Announcement
+            {t('newAnnouncement')}
           </button>
         )}
       </div>
@@ -50,7 +52,7 @@ export default function Announcements() {
       {items.length === 0 ? (
         <div className="empty" style={{ paddingTop: 60 }}>
           <div className="empty-icon">📭</div>
-          No announcements yet.
+          {t('noAnnouncements')}
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -69,24 +71,23 @@ export default function Announcements() {
                     {a.body}
                   </p>
                   <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text-muted)' }}>
-                    Posted by {a.author_name || 'HR'} · {toBE(a.created_at?.slice(0, 10))}
+                    {t('postedBy')} {a.author_name || 'HR'} · {toBE(a.created_at?.slice(0, 10))}
                   </div>
                 </div>
                 {isHR && (
                   <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                     <button
                       className="btn btn-outline btn-sm"
-                      title={a.pinned ? 'Unpin' : 'Pin to top'}
                       onClick={() => handlePin(a.announcement_id)}
                     >
-                      {a.pinned ? '📌 Unpin' : '📌 Pin'}
+                      {a.pinned ? t('unpinBtn') : t('pinBtn')}
                     </button>
                     <button
                       className="btn btn-sm"
                       style={{ background: 'var(--danger)', color: '#fff', border: 'none' }}
                       onClick={() => handleDelete(a.announcement_id)}
                     >
-                      Delete
+                      {t('deleteAnnouncement')}
                     </button>
                   </div>
                 )}
@@ -100,29 +101,29 @@ export default function Announcements() {
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 520 }}>
             <div className="modal-header">
-              <h2>New Announcement</h2>
+              <h2>{t('newAnnouncement')}</h2>
               <button className="modal-close" onClick={() => setShowModal(false)}>✕</button>
             </div>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label className="form-label">Title *</label>
+                <label className="form-label">{t('announcementTitle')} *</label>
                 <input
                   className="form-control"
                   value={form.title}
                   onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                   required
-                  placeholder="e.g. Office closed on Monday"
+                  placeholder={t('announcementTitlePlaceholder')}
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Message *</label>
+                <label className="form-label">{t('announcementBody')} *</label>
                 <textarea
                   className="form-control"
                   rows={5}
                   value={form.body}
                   onChange={e => setForm(f => ({ ...f, body: e.target.value }))}
                   required
-                  placeholder="Write your announcement here..."
+                  placeholder={t('announcementBodyPlaceholder')}
                   style={{ resize: 'vertical' }}
                 />
               </div>
@@ -134,13 +135,13 @@ export default function Announcements() {
                   onChange={e => setForm(f => ({ ...f, pinned: e.target.checked }))}
                 />
                 <label htmlFor="pinned" style={{ fontSize: 14, cursor: 'pointer' }}>
-                  📌 Pin to top
+                  {t('pinToTop')}
                 </label>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>{t('cancel')}</button>
                 <button type="submit" className="btn btn-primary" disabled={saving}>
-                  {saving ? 'Posting...' : 'Post Announcement'}
+                  {saving ? t('posting') : t('postAnnouncement')}
                 </button>
               </div>
             </form>

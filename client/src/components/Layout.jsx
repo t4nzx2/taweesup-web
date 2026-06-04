@@ -8,7 +8,7 @@ import './Layout.css';
 
 const mainNav = [
   { to: '/', key: 'dashboard', icon: '▦', exact: true },
-  { to: '/announcements', key: 'announcements', label: 'Announcements', icon: '📢' },
+  { to: '/announcements', key: 'announcements', icon: '📢' },
   { to: '/employees', key: 'employees', icon: '⊹' },
   { to: '/departments', key: 'departments', icon: '⊞' },
   { to: '/timesheet', key: 'timesheet', icon: '◷' },
