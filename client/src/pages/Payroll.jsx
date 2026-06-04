@@ -25,11 +25,58 @@ export default function Payroll() {
     load();
   };
 
+  const exportPDF = () => {
+    const win = window.open('', '_blank');
+    const rows = records.map(r => `
+      <tr>
+        ${isHR ? `<td>${r.employee_name || ''}</td>` : ''}
+        <td>${r.pay_period_start} – ${r.pay_period_end}</td>
+        <td style="text-align:right">${Number(r.gross_pay).toLocaleString('th-TH')} ฿</td>
+        <td style="text-align:right">${Number(r.tax_deductions).toLocaleString('th-TH')} ฿</td>
+        <td style="text-align:right"><strong>${Number(r.net_pay).toLocaleString('th-TH')} ฿</strong></td>
+        <td>${r.payment_date || '—'}</td>
+      </tr>`).join('');
+    win.document.write(`
+      <!DOCTYPE html><html><head><meta charset="utf-8">
+      <title>Payroll Report</title>
+      <style>
+        body { font-family: sans-serif; padding: 32px; color: #1a1a2e; }
+        h1 { font-size: 20px; margin-bottom: 4px; }
+        p.sub { color: #666; font-size: 13px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { background: #6c63ff; color: white; padding: 10px 12px; text-align: left; }
+        td { padding: 9px 12px; border-bottom: 1px solid #e8eaf0; }
+        tr:nth-child(even) td { background: #f8f9fe; }
+        .footer { margin-top: 24px; font-size: 12px; color: #999; }
+        @media print { body { padding: 0; } }
+      </style></head><body>
+      <h1>📄 Payroll Report — Taweesup.Web</h1>
+      <p class="sub">Generated: ${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })} · ${records.length} record(s)</p>
+      <table>
+        <thead><tr>
+          ${isHR ? '<th>Employee</th>' : ''}
+          <th>Period</th><th>Gross Pay</th><th>Deductions</th><th>Net Pay</th><th>Payment Date</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="footer">Taweesup.Web HR System — Confidential</div>
+      <script>window.onload = () => { window.print(); }<\/script>
+      </body></html>`);
+    win.document.close();
+  };
+
   return (
     <div>
       <div className="page-header">
         <h1>{t('payroll')}</h1>
-        {isHR && <button className="btn btn-primary" onClick={() => { setEditing(null); setShowModal(true); }}>{t('addPayroll')}</button>}
+        <div style={{ display: 'flex', gap: 8 }}>
+          {records.length > 0 && (
+            <button className="btn btn-outline" onClick={exportPDF}>
+              🖨 Export PDF
+            </button>
+          )}
+          {isHR && <button className="btn btn-primary" onClick={() => { setEditing(null); setShowModal(true); }}>{t('addPayroll')}</button>}
+        </div>
       </div>
       <div className="card">
         {records.length === 0 ? <p className="empty">{t('noPayrollRecords')}</p> : (

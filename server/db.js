@@ -1,10 +1,12 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
-// Use DATA_DIR (Render persistent disk) if set, otherwise local folder
-const dbPath = process.env.DATA_DIR
-  ? path.join(process.env.DATA_DIR, 'hrit.db')
-  : path.join(__dirname, 'hrit.db');
+// Use in-memory DB for tests, DATA_DIR for production, local otherwise
+const dbPath = process.env.NODE_ENV === 'test'
+  ? ':memory:'
+  : process.env.DATA_DIR
+    ? path.join(process.env.DATA_DIR, 'hrit.db')
+    : path.join(__dirname, 'hrit.db');
 
 const db = new Database(dbPath);
 
@@ -127,6 +129,16 @@ db.exec(`
     recorded_by INTEGER,
     created_at TEXT DEFAULT (datetime('now')),
     FOREIGN KEY (employee_id) REFERENCES employees(employee_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS announcements (
+    announcement_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL,
+    pinned INTEGER DEFAULT 0,
+    created_by INTEGER,
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (created_by) REFERENCES employees(employee_id)
   );
 `);
 

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import api from '../api';
 import { useLang } from '../LangContext';
 import { useAuth } from '../AuthContext';
 import { formatTHB, toBE, todayBE } from '../utils';
+
 
 const monthlyData = [
   { month: 'Jan', income: 6200, expense: 3100 }, { month: 'Feb', income: 7800, expense: 3400 },
@@ -18,6 +19,8 @@ const monthlyData = [
 export default function Dashboard() {
   const [data, setData] = useState(null);
   const [employees, setEmployees] = useState([]);
+
+  const [announcements, setAnnouncements] = useState([]);
   const navigate = useNavigate();
   const { t } = useLang();
   const { user } = useAuth();
@@ -26,6 +29,7 @@ export default function Dashboard() {
   useEffect(() => {
     api.get('/dashboard').then(r => setData(r.data)).catch(() => {});
     api.get('/employees').then(r => setEmployees(r.data.slice(0, 5))).catch(() => {});
+    api.get('/announcements').then(r => setAnnouncements(r.data.slice(0, 3))).catch(() => {});
   }, []);
 
   if (!data) return <div className="empty" style={{paddingTop:80}}><div className="empty-icon">⏳</div>{t('loading')}</div>;
@@ -111,6 +115,26 @@ export default function Dashboard() {
             </BarChart>
           </ResponsiveContainer>
         </div>
+      </div>
+
+      {/* Announcements preview */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div className="card-header">
+          <span className="card-title">📢 Announcements</span>
+          <button className="btn btn-outline btn-sm" onClick={() => navigate('/announcements')}>View All →</button>
+        </div>
+        {announcements.length === 0 ? (
+          <p style={{ color: 'var(--text-muted)', fontSize: 13, padding: '8px 0' }}>No announcements yet.</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {announcements.map(a => (
+              <div key={a.announcement_id} style={{ borderLeft: `3px solid ${a.pinned ? 'var(--primary)' : 'var(--border)'}`, paddingLeft: 10 }}>
+                <div style={{ fontWeight: 600, fontSize: 13 }}>{a.pinned ? '📌 ' : ''}{a.title}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.body}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Employee list */}

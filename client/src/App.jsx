@@ -14,6 +14,7 @@ import Reviews from './pages/Reviews';
 import Incidents from './pages/Incidents';
 import Departments from './pages/Departments';
 import Accounts from './pages/Accounts';
+import Announcements from './pages/Announcements';
 
 function RequireAuth({ children }) {
   const { user } = useAuth();
@@ -39,6 +40,7 @@ export default function App() {
             <Route path="incidents" element={<Incidents />} />
             <Route path="departments" element={<Departments />} />
             <Route path="accounts" element={<Accounts />} />
+            <Route path="announcements" element={<Announcements />} />
           </Route>
         </Routes>
       </BrowserRouter>

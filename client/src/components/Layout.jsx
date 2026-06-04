@@ -8,6 +8,7 @@ import './Layout.css';
 
 const mainNav = [
   { to: '/', key: 'dashboard', icon: '▦', exact: true },
+  { to: '/announcements', key: 'announcements', label: 'Announcements', icon: '📢' },
   { to: '/employees', key: 'employees', icon: '⊹' },
   { to: '/departments', key: 'departments', icon: '⊞' },
   { to: '/timesheet', key: 'timesheet', icon: '◷' },
@@ -21,9 +22,9 @@ const mgmtNav = [
 ];
 
 const pageTitles = {
-  '/': 'Dashboard', '/employees': 'Employees', '/departments': 'Departments',
-  '/timesheet': 'Timesheet', '/leave': 'Leave Requests', '/payroll': 'Payroll',
-  '/reviews': 'Performance', '/incidents': 'Incidents', '/accounts': 'Accounting',
+  '/': 'Dashboard', '/announcements': 'Announcements', '/employees': 'Employees',
+  '/departments': 'Departments', '/timesheet': 'Timesheet', '/leave': 'Leave Requests',
+  '/payroll': 'Payroll', '/reviews': 'Performance', '/incidents': 'Incidents', '/accounts': 'Accounting',
 };
 
 export default function Layout() {
